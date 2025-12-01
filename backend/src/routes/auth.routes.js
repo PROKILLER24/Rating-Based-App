@@ -1,17 +1,18 @@
+// Auth routes
+// Location: backend/src/routes/auth.routes.js
+
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/auth.controller');
+const { requireAuth } = require('../middleware/auth.middleware');
+const { validate, schemas } = require('../utils/validation');
 
-// Import controllers
-// const { login, register } = require('../controllers/auth.controller');
+// Public routes
+router.post('/register', validate(schemas.register), authController.register);
+router.post('/login', validate(schemas.login), authController.login);
 
-// Example placeholders
-router.post('/login', (req, res) => {
-  return res.json({ message: 'Login route placeholder' });
-});
-
-router.post('/register', (req, res) => {
-  return res.json({ message: 'Register route placeholder' });
-});
+// Protected routes
+router.put('/password', requireAuth, validate(schemas.updatePassword), authController.updatePassword);
 
 module.exports = router;
 

@@ -1,15 +1,32 @@
-// Database connection placeholder
-// Wire this up with Prisma, Sequelize, or your preferred ORM
+// Database connection using Prisma
+// Location: backend/src/config/db.js
 
+const { PrismaClient } = require('@prisma/client');
 const { DATABASE_URL } = require('./env');
 
+const prisma = new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+});
+
 async function connectDB() {
-  console.log('Connecting to database at', DATABASE_URL || '(not set)');
-  // TODO: Initialize your DB/ORM client here
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+  } catch (error) {
+    console.error('❌ Database connection error:', error);
+    process.exit(1);
+  }
+}
+
+async function disconnectDB() {
+  await prisma.$disconnect();
+  console.log('Database disconnected');
 }
 
 module.exports = {
+  prisma,
   connectDB,
+  disconnectDB,
 };
 
 

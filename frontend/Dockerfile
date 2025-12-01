@@ -1,15 +1,23 @@
+# Frontend Dockerfile
+# Location: frontend/Dockerfile
+
 FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+# Copy package files
+COPY package.json package-lock.json* ./
 
-RUN npm install
+# Install dependencies
+RUN npm ci
 
+# Copy application code
 COPY . .
 
+# Expose port
 EXPOSE 5173
 
+# Start dev server (for production, use build + serve)
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 
