@@ -33,3 +33,5 @@ backend/prisma/migrations/
 
 # Docker
 .dockerignore
+
+.early.coverage

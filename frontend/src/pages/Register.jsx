@@ -4,7 +4,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -31,68 +30,132 @@ const Register = () => {
       await register(formData);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Registration failed');
+      // Handle different types of errors
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || !err.response) {
+        setError('Cannot connect to server. Please make sure the backend server is running on http://localhost:5000');
+      } else if (err.response?.data?.errors) {
+        // Validation errors from backend
+        const validationErrors = Array.isArray(err.response.data.errors) 
+          ? err.response.data.errors.join(', ')
+          : err.response.data.errors;
+        setError(validationErrors);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError(err.message || 'Registration failed. Please check your information and try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Sign Up</h2>
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create Your Account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Join us to start rating stores
+          </p>
+        </div>
         {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Name (20-60 characters)</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              minLength={20}
-              maxLength={60}
-              required
-            />
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name <span className="text-gray-500 text-xs">(20-60 characters)</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                minLength={20}
+                maxLength={60}
+                value={formData.name}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                placeholder="Enter your full name"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                placeholder="Enter your email"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password <span className="text-gray-500 text-xs">(8-16 chars, 1 uppercase, 1 special)</span>
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={16}
+                value={formData.password}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                placeholder="Create a strong password"
+              />
+            </div>
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                Address <span className="text-gray-500 text-xs">(optional, max 400 chars)</span>
+              </label>
+              <textarea
+                id="address"
+                name="address"
+                rows={3}
+                maxLength={400}
+                value={formData.address}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
+                placeholder="Enter your address (optional)"
+              />
+            </div>
           </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Registering...
+                </span>
+              ) : (
+                'Create Account'
+              )}
+            </button>
           </div>
-          <div className="form-group">
-            <label>Password (8-16 chars, 1 uppercase, 1 special)</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              minLength={8}
-              maxLength={16}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Address (optional, max 400 chars)</label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              maxLength={400}
-              rows={3}
-            />
-          </div>
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? 'Registering...' : 'Sign Up'}
-          </button>
         </form>
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500 transition-colors">
+            Sign in here
+          </Link>
         </p>
       </div>
     </div>
